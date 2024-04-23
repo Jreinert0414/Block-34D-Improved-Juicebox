@@ -1,6 +1,7 @@
 const authRouter = require("express").Router();
 const db = require("../db");
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
 
 const { PrismaClient } = require("@prisma/client");
 const { urlencoded } = require("express");
@@ -9,10 +10,11 @@ const prisma = new PrismaClient();
 
 
 authRouter.post("/register", async (req, res, next) => {
+    const password=req.body.password
   try {
     user = {
       username: req.body.username,
-      password: req.body.password
+      password: `${await bcrypt.hash(password, 10)}`
     }
     const newUser = await prisma.users.create({ data: user })
     res.send(newUser)
@@ -33,7 +35,7 @@ authRouter.post("/login", async (req, res, next) => {
       where: {
         username: req.body.username,
         password: req.body.password,
-        
+
       }
     })
 
@@ -48,6 +50,8 @@ authRouter.post("/login", async (req, res, next) => {
     console.log(error)
     next(error);
   }
+
+
 
 });
 
